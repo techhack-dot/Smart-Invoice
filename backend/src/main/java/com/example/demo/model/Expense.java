@@ -49,4 +49,14 @@ public class Expense {
 
     public String getReceiptFileName() { return receiptFileName; }
     public void setReceiptFileName(String receiptFileName) { this.receiptFileName = receiptFileName; }
+
+    // Enterprise Audit Fields
+    private String auditStatus; // e.g., "COMPLIANT", "FLAGGED"
+    private String auditMessage; // e.g., "Meal expense exceeds $75 enterprise threshold"
+
+    public String getAuditStatus() { return auditStatus; }
+    public void setAuditStatus(String auditStatus) { this.auditStatus = auditStatus; }
+
+    public String getAuditMessage() { return auditMessage; }
+    public void setAuditMessage(String auditMessage) { this.auditMessage = auditMessage; }
 }

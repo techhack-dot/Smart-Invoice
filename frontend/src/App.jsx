@@ -311,6 +311,7 @@ function App() {
                 <th style={{ padding: '12px' }}>Amount</th>
                 <th style={{ padding: '12px' }}>Receipt Document</th>
                 <th style={{ padding: '12px' }}>Actions</th>
+                <th style={{ padding: '12px' }}>Enterprise Audit Status</th>
               </tr>
             </thead>
             <tbody>
@@ -334,6 +335,22 @@ function App() {
                   <td style={{ padding: '12px' }}>
                     <button onClick={() => handleDelete(exp.id)} style={{ border: 'none', background: '#fee2e2', color: '#dc2626', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Delete</button>
                   </td>
+                  <td style={{ padding: '12px' }}>
+  {exp.auditStatus === 'FLAGGED' ? (
+    <div>
+      <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '11px', background: '#fee2e2', color: '#b91c1c', fontWeight: '700' }}>
+        ⚠️ FLAGGED
+      </span>
+      <div style={{ fontSize: '11px', color: '#dc2626', marginTop: '4px', maxWidth: '200px' }}>
+        {exp.auditMessage}
+      </div>
+    </div>
+  ) : (
+    <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '11px', background: '#dcfce7', color: '#15803d', fontWeight: '700' }}>
+      ✅ COMPLIANT
+    </span>
+  )}
+</td>
                 </tr>
               ))}
             </tbody>
