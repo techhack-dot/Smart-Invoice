@@ -20,7 +20,7 @@ function App() {
   const [file, setFile] = useState(null);
   const [filter, setFilter] = useState('All');
 
-  const API = "http://localhost:6969";
+  const API = "https://smart-invoice-backend-5mlz.onrender.com";
 
   const handleAuth = async (e) => {
     e.preventDefault();
