@@ -216,7 +216,7 @@ function App() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
           <div style={{ background: '#ffffff', padding: '24px', borderRadius: '12px', borderLeft: '5px solid #3b82f6', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize: '13px', fontWeight: '600', color: '#64748b' }}>TOTAL AUDITED EXPENSES</div>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#0f172a', marginTop: '8px' }}>${totalAmount.toFixed(2)}</div>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: '#0f172a', marginTop: '8px' }}>₹{totalAmount.toFixed(2)}</div>
           </div>
           <div style={{ background: '#ffffff', padding: '24px', borderRadius: '12px', borderLeft: '5px solid #10b981', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
             <div style={{ fontSize: '13px', fontWeight: '600', color: '#64748b' }}>TOTAL RECORD COUNT</div>
@@ -232,7 +232,7 @@ function App() {
               <Doughnut data={chartData} />
             </div>
             <div style={{ maxWidth: '450px', width: '100%', textAlign: 'center' }}>
-              <h4 style={{ margin: '0 0 10px 0', color: '#475569' }}>Category Spending ($)</h4>
+              <h4 style={{ margin: '0 0 10px 0', color: '#475569' }}>Category Spending (₹)</h4>
               <Bar data={chartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
             </div>
           </div>
@@ -259,7 +259,7 @@ function App() {
                 style={{ width: '100%', padding: '10px', marginTop: '4px', border: '1px solid #cbd5e1', borderRadius: '6px', boxSizing: 'border-box' }} />
             </div>
             <div>
-              <label style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Amount ($)</label>
+              <label style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Amount (₹)</label>
               <input type="number" step="0.01" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} required 
                 style={{ width: '100%', padding: '10px', marginTop: '4px', border: '1px solid #cbd5e1', borderRadius: '6px', boxSizing: 'border-box' }} />
             </div>
@@ -322,7 +322,7 @@ function App() {
                     <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '12px', background: '#e0f2fe', color: '#0369a1', fontWeight: '600' }}>{exp.category}</span>
                   </td>
                   <td style={{ padding: '12px', color: '#64748b' }}>{exp.expenseDate}</td>
-                  <td style={{ padding: '12px', fontWeight: '700', color: '#0f172a' }}>${exp.amount.toFixed(2)}</td>
+                  <td style={{ padding: '12px', fontWeight: '700', color: '#0f172a' }}>₹{exp.amount.toFixed(2)}</td>
                   <td style={{ padding: '12px' }}>
                     {exp.receiptFileName ? (
                       <a href={`${API}/api/expenses/receipt/${exp.receiptFileName}`} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: '600', textDecoration: 'none' }}>
