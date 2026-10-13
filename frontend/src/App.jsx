@@ -325,9 +325,9 @@ function App() {
                   <td style={{ padding: '12px', fontWeight: '700', color: '#0f172a' }}>₹{exp.amount.toFixed(2)}</td>
                   <td style={{ padding: '12px' }}>
                     {exp.receiptFileName ? (
-                      <a href={`${API}/api/expenses/receipt/${exp.receiptFileName}`} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: '600', textDecoration: 'none' }}>
-                        📎 View File
-                      </a>
+                      <a href={`${API}/api/expenses/receipt/${exp.id}`} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: '600', textDecoration: 'none' }}>
+  📎 View File
+</a>
                     ) : (
                       <span style={{ color: '#94a3b8', fontSize: '12px' }}>None attached</span>
                     )}

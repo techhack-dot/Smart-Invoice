@@ -4,8 +4,6 @@ import com.example.demo.model.Expense;
 import com.example.demo.repository.ExpenseRepository;
 import com.example.demo.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +11,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/expenses")
-@CrossOrigin(origins = "*") // Allows your Vercel frontend without CORS blocks
+@CrossOrigin(origins = "*")
 public class ExpenseController {
 
     @Autowired
@@ -29,10 +26,7 @@ public class ExpenseController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // Use absolute path for reliable file storage in Docker / Render & Windows
-    private final Path uploadPath = Paths.get(System.getProperty("user.dir"), "uploads").toAbsolutePath().normalize();
-
-    // 1. ADD EXPENSE WITH MULTIPART FILE & ENTERPRISE AUDIT ENGINE
+    // 1. ADD EXPENSE WITH RECEIPT DATA & ENTERPRISE AUDIT
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> addExpense(
             @RequestHeader("Authorization") String authHeader,
@@ -52,29 +46,21 @@ public class ExpenseController {
         expense.setExpenseDate(LocalDate.parse(expenseDate));
         expense.setUsername(username);
 
-        // --- PART A: ROBUST FILE STORAGE (PDF / IMAGE) ---
+        // Store file directly into the cloud database
         if (file != null && !file.isEmpty()) {
             try {
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-
-                String originalFilename = file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
-                String fileName = System.currentTimeMillis() + "_" + originalFilename;
-                Path targetLocation = uploadPath.resolve(fileName);
-
-                Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-                expense.setReceiptFileName(fileName);
+                expense.setReceiptData(file.getBytes());
+                expense.setReceiptFileType(file.getContentType());
+                expense.setReceiptFileName(file.getOriginalFilename());
             } catch (IOException e) {
-                return ResponseEntity.internalServerError().body("Error saving file: " + e.getMessage());
+                return ResponseEntity.internalServerError().body("Error processing file bytes: " + e.getMessage());
             }
         }
 
-        // --- PART B: ENTERPRISE AUDIT & COMPLIANCE ENGINE ---
+        // Enterprise Smart-Audit Rules
         String auditStatus = "COMPLIANT";
         String auditMessage = "Policy Verified";
 
-        // Rule 1: Duplicate Invoice Fraud Check (checks if same amount and title exists for this user)
         List<Expense> existing = expenseRepository.findByUsername(username);
         boolean isDuplicate = existing.stream().anyMatch(e ->
                 e.getAmount().equals(amount) && e.getTitle().equalsIgnoreCase(title)
@@ -82,20 +68,17 @@ public class ExpenseController {
 
         if (isDuplicate) {
             auditStatus = "FLAGGED";
-            auditMessage = "DUPLICATE ALERT: An identical invoice was already claimed!";
-        }
-        // Rule 2: Corporate Policy Cap (Meals > $75 or Office > $200)
-        else if (category.equalsIgnoreCase("Meals") && amount > 75.0) {
+            auditMessage = "DUPLICATE ALERT: Identical claim already exists!";
+        } else if (category.equalsIgnoreCase("Meals") && amount > 75.0) {
             auditStatus = "FLAGGED";
-            auditMessage = "POLICY VIOLATION: Meals exceed the $75.00 corporate cap without VP approval.";
+            auditMessage = "POLICY VIOLATION: Meals exceed $75.00 limit.";
         } else if (category.equalsIgnoreCase("Office") && amount > 200.0) {
             auditStatus = "FLAGGED";
-            auditMessage = "POLICY VIOLATION: Office supplies over $200 require purchase order (PO).";
+            auditMessage = "POLICY VIOLATION: Office supplies exceed $200.00 limit.";
         }
 
         expense.setAuditStatus(auditStatus);
         expense.setAuditMessage(auditMessage);
-        // ----------------------------------------------------
 
         Expense saved = expenseRepository.save(expense);
         return ResponseEntity.ok(saved);
@@ -109,31 +92,22 @@ public class ExpenseController {
         return expenseRepository.findByUsername(username);
     }
 
-    // 3. VIEW / DOWNLOAD RECEIPT (PDF OR IMAGE INLINE)
-    @GetMapping("/receipt/{fileName:.+}")
-    public ResponseEntity<Resource> getReceipt(@PathVariable String fileName) {
-        try {
-            Path filePath = uploadPath.resolve(fileName).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
+    // 3. VIEW RECEIPT BY ID (100% Cloud-Safe, No 404s)
+    @GetMapping("/receipt/{id}")
+    public ResponseEntity<byte[]> getReceipt(@PathVariable Long id) {
+        Optional<Expense> expOpt = expenseRepository.findById(id);
 
-            if (resource.exists() && resource.isReadable()) {
-                String contentType = Files.probeContentType(filePath);
-                if (contentType == null) {
-                    contentType = "application/octet-stream";
-                }
+        if (expOpt.isPresent() && expOpt.get().getReceiptData() != null) {
+            Expense exp = expOpt.get();
+            String contentType = exp.getReceiptFileType() != null ? exp.getReceiptFileType() : "application/pdf";
 
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (MalformedURLException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + exp.getReceiptFileName() + "\"")
+                    .body(exp.getReceiptData());
         }
+
+        return ResponseEntity.notFound().build();
     }
 
     // 4. DELETE EXPENSE

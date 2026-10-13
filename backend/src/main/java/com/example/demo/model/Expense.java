@@ -16,19 +16,21 @@ public class Expense {
     private String category;
     private LocalDate expenseDate;
     private String username;
+
     private String receiptFileName;
+    private String receiptFileType; // e.g., "application/pdf" or "image/png"
+
+    // Stores the actual PDF/image directly in the cloud database
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] receiptData;
+
+    private String auditStatus;
+    private String auditMessage;
 
     public Expense() {}
 
-    public Expense(String title, Double amount, String category, LocalDate expenseDate, String username, String receiptFileName) {
-        this.title = title;
-        this.amount = amount;
-        this.category = category;
-        this.expenseDate = expenseDate;
-        this.username = username;
-        this.receiptFileName = receiptFileName;
-    }
-
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -50,9 +52,11 @@ public class Expense {
     public String getReceiptFileName() { return receiptFileName; }
     public void setReceiptFileName(String receiptFileName) { this.receiptFileName = receiptFileName; }
 
-    // Enterprise Audit Fields
-    private String auditStatus; // e.g., "COMPLIANT", "FLAGGED"
-    private String auditMessage; // e.g., "Meal expense exceeds $75 enterprise threshold"
+    public String getReceiptFileType() { return receiptFileType; }
+    public void setReceiptFileType(String receiptFileType) { this.receiptFileType = receiptFileType; }
+
+    public byte[] getReceiptData() { return receiptData; }
+    public void setReceiptData(byte[] receiptData) { this.receiptData = receiptData; }
 
     public String getAuditStatus() { return auditStatus; }
     public void setAuditStatus(String auditStatus) { this.auditStatus = auditStatus; }
